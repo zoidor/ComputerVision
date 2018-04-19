@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <exception>
 #include <opencv2/opencv.hpp>
 
 //from https://www.pyimagesearch.com/2014/11/24/detecting-barcodes-images-python-opencv/
@@ -19,10 +20,6 @@ int main(int argc, char** argv )
         printf("No image data \n");
         return -1;
     }
-    cv::namedWindow("TEST", cv::WINDOW_AUTOSIZE );
-    //imshow("Display Image", image);
-    //TODO init to empty?
-
 
     cv::Mat imageBw;
 	
@@ -35,27 +32,30 @@ int main(int argc, char** argv )
     cv::Sobel(imageBw, gradX, CV_32F, 1, 0, use_scharr_filter);
     cv::Sobel(imageBw, gradY, CV_32F, 0, 1, use_scharr_filter);
 
-    auto gradient = abs(gradX - gradY);
+    cv::Mat gradient;
+    auto diff = gradX - gradY;
+    cv::convertScaleAbs(diff, gradient);
     cv::Mat blurred;
     cv::blur(gradient, blurred, cv::Size(9, 9));
     
     cv::Mat thresholded;
-    cv::threshold(blurred, thresholded, 255.0, 255.0, cv::THRESH_BINARY);
+    cv::threshold(blurred, thresholded, 225.0, 255.0, cv::THRESH_BINARY);
 
     cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(21, 7));
     cv::Mat closed;
   
     cv::morphologyEx(thresholded, closed, cv::MORPH_CLOSE, kernel);
  
-    
     cv::erode(closed, closed, cv::Mat{}, cv::Point(-1, -1), 4);
     cv::dilate(closed, closed, cv::Mat{}, cv::Point(-1, -1), 4);
 
-    std::vector<std::vector<cv::Point> > contours;
-    std::vector<cv::Vec4i> hierarchy;
-
-    cv::findContours(closed, contours, hierarchy, cv::RETR_EXTERNAL,
+    std::vector<std::vector<cv::Point>> contours;
+    
+    cv::findContours(closed, contours, cv::RETR_EXTERNAL,
 	cv::CHAIN_APPROX_SIMPLE);
+
+    if(contours.empty())
+       throw std::logic_error("I must have at least 1 contour");
 
     auto sort_contours_op = [](const auto& polygon1, const auto& polygon2)
     {
