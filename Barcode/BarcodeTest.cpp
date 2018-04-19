@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <vector>
+#include <array>
 #include <algorithm>
 #include <exception>
 #include <opencv2/opencv.hpp>
@@ -67,9 +68,9 @@ int main(int argc, char** argv )
 
     auto enclosing_rect = cv::minAreaRect(*contours.begin());
 
-    cv::Point2f rect_points[4]; enclosing_rect.points( rect_points );
-       for( int j = 0; j < 4; j++ )
-          cv::line(image, rect_points[j], rect_points[(j+1)%4], cv::Scalar(0, 255, 0), 3, 8 );
+    std::array<cv::Point2f, 4> rect_points; enclosing_rect.points(rect_points.begin());
+       for( int j = 0; j < rect_points.size(); j++ )
+          cv::line(image, rect_points[j], rect_points[(j + 1) %  rect_points.size()], cv::Scalar(0, 255, 0), 3, 8 );
 
     cv::imshow("rectangles", image);
     cv::waitKey(0);
