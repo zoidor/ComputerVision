@@ -60,17 +60,16 @@ int main(int argc, char** argv )
     auto sort_contours_op = [](const auto& polygon1, const auto& polygon2)
     {
 	const bool not_oriented = false;
-	return cv::contourArea(polygon1, not_oriented) < cv::contourArea(polygon2, not_oriented);
+	return cv::contourArea(polygon1, not_oriented) > cv::contourArea(polygon2, not_oriented);
     };
 
     std::sort(contours.begin(), contours.end(), sort_contours_op);
 
     auto enclosing_rect = cv::minAreaRect(*contours.begin());
-	
-    cv::Mat enclosing_points;
-    cv::boxPoints(enclosing_rect, enclosing_points);
 
-    cv::drawContours(image, enclosing_points, -1, cv::Scalar(0, 255, 0), 3);
+    cv::Point2f rect_points[4]; enclosing_rect.points( rect_points );
+       for( int j = 0; j < 4; j++ )
+          cv::line(image, rect_points[j], rect_points[(j+1)%4], cv::Scalar(0, 255, 0), 3, 8 );
 
     cv::imshow("rectangles", image);
     cv::waitKey(0);
