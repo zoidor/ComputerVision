@@ -67,10 +67,10 @@ int main(int argc, char** argv )
     std::sort(contours.begin(), contours.end(), sort_contours_op);
 
     auto enclosing_rect = cv::minAreaRect(*contours.begin());
-
+    const int thickness = 3;
     std::array<cv::Point2f, 4> rect_points; enclosing_rect.points(rect_points.begin());
        for( int j = 0; j < rect_points.size(); j++ )
-          cv::line(image, rect_points[j], rect_points[(j + 1) %  rect_points.size()], cv::Scalar(0, 255, 0), 3, 8 );
+          cv::line(image, rect_points[j], rect_points[(j + 1) %  rect_points.size()], cv::Scalar(0, 255, 0), thickness);
 
     cv::imshow("rectangles", image);
     cv::waitKey(0);
